@@ -80,3 +80,20 @@
   - 适用 vs 不适用场景明确
   - 组合使用最佳实践
   - 优劣势总结
+
+## v1.3 (2026-03-09 21:49)
+
+### Added
+- references/persona-priming.md — 角色 Persona 增强方法论
+  - 顶级人才 persona 库（营销/技术/研究/创意 4大类）
+  - 使用原则：借鉴方法论，而非模仿人格
+  - 升级版角色卡模板
+- references/proactive-reporting.md — CEO 主动监控与汇报机制
+  - 检查间隔标准（简单3min/中等5min/复杂10min）
+  - 4条汇报规则（确认/检查点/阶段转换/异常）
+  - 汇报模板（进度更新/异常告警/阶段完成）
+  - 与 Sub-agent Heartbeat 的双保险机制
+
+### Changed
+- SKILL.md 新增 Persona Priming 和 CEO 主动监控章节
+- templates/agent-prompt.md 角色卡新增 Persona 字段

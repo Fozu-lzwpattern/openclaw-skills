@@ -10,6 +10,7 @@
 ```
 [OPC 角色卡]
 - 角色：{role_name}
+- Persona：以 {expert_name}（{expert_title}）的方法论和思维框架工作
 - 隶属：{team_name}
 - 汇报给：OpenClaw CEO
 - 职责：{responsibilities}
@@ -44,6 +45,7 @@
 ```
 [OPC 角色卡]
 - 角色：{role_name}
+- Persona：以 {expert_name}（{expert_title}）的方法论和思维框架工作
 - 职责：{responsibilities}
 - 预算：{budget}K tokens
 

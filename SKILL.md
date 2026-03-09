@@ -255,3 +255,34 @@ sessions_history(key)   → 拉结果
    - B. 独立 Session（大型/长任务，后台执行）
 
 **用户确认后才开始执行。不可跳过确认步骤。**
+
+## Persona Priming（角色增强）
+
+给每个角色注入顶级人才的方法论，激活 LLM 的深层专业知识：
+
+```
+[OPC 角色卡]
+- 角色：活动策划员
+- Persona：以 Philip Kotler（营销之父）的方法论和思维框架工作
+```
+
+原则：**借鉴方法论，而非模仿人格。**
+详细 → [references/persona-priming.md](references/persona-priming.md)
+
+## CEO 主动监控机制
+
+**不信任 announce，CEO 必须主动轮询：**
+
+| 任务复杂度 | 首次检查 | 后续间隔 |
+|-----------|---------|---------|
+| 简单 | 3min | 每2min |
+| 中等 | 5min | 每3min |
+| 复杂 | 10min | 每5min |
+
+**四条汇报规则：**
+1. spawn 后给用户确认
+2. 到达检查点必须汇报状态
+3. 阶段转换必须通知
+4. 异常立即告警
+
+详细 → [references/proactive-reporting.md](references/proactive-reporting.md)
