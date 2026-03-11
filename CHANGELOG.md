@@ -97,3 +97,61 @@
 ### Changed
 - SKILL.md 新增 Persona Priming 和 CEO 主动监控章节
 - templates/agent-prompt.md 角色卡新增 Persona 字段
+
+## v1.4 (2026-03-11) — 实战驱动的四项优化
+
+> 基于 2026-03-10 三会场搭建实战中暴露的问题，推动四项关键优化。
+
+### 实战问题
+
+| 问题 | 影响 | 根因 |
+|------|------|------|
+| Compaction 丢失执行状态 | Phase 2 启动延迟 | 项目状态完全在 context 中 |
+| 并行 agent 状态不清晰 | CEO 难判断谁完了谁卡了 | 缺乏结构化状态看板 |
+| 失败后完整重试 | 到餐搭建员浪费 17min | 无断点续传机制 |
+| 成本追踪形同虚设 | Sub-agent 不汇报 token | 依赖"自觉"这种不可靠的机制 |
+
+### Added — 项目状态持久化（P0）
+- **scripts/project_state.py** (368行) — 全新项目状态管理器
+  - `init` / `update-phase` / `agent-start` / `agent-complete` / `agent-fail`
+  - `checkpoint` / `checkpoint-get` / `restore`
+  - `show` / `list` / `report` / `diagnose`
+  - 自动计算成本占比和预算告警
+- **references/project-state.md** — 状态持久化设计文档
+  - 状态文件结构（JSON Schema）
+  - 目录结构规范
+  - CEO 集成规范（4条必须遵守的规则）
+  - Compaction 恢复流程
+
+### Added — 断点续传（P0）
+- SKILL.md 新增「断点续传」章节
+  - 完整流程：失败→提取步骤→保存断点→kill→恢复→注入
+  - 断点续传 prompt 模板
+  - 断点内容规范（completedSteps/nextStep/context）
+
+### Added — 自动归因（P1）
+- `project_state.py diagnose` 命令
+  - 根据错误关键词自动分类：L1-Platform / L2-Orchestration / L3-BusinessSkill
+  - 输出建议操作
+  - 标注是否有可用断点
+
+### Changed — 成本追踪自动化（P1）
+- 不再依赖 Sub-agent 自觉汇报
+- CEO 通过 session_status 获取 token 消耗后写入 project_state
+- `project_state.py report` 自动生成成本报告
+- 预算告警自动计算（80%/100% 阈值）
+
+### Changed — 确认流程分级简化（P1）
+- 原来：所有任务都3轮确认
+- 现在：简单1轮 / 中等2轮 / 复杂3轮
+- 判断标准：Sub-agent 数量 + 并行度 + 跨业务线
+
+### Changed — 使用限制更新
+- 第3条：「预算是软约束」→「预算通过 project_state.py 自动追踪」
+- 第4条：「项目状态在 context 中」→「项目状态持久化到文件」
+
+### File Statistics
+- 新增文件：2（project_state.py + project-state.md）
+- 修改文件：2（SKILL.md + CHANGELOG.md）
+- 新增行数：~550行
+- SKILL.md 总行数：~486行
