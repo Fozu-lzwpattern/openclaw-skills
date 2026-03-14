@@ -1,6 +1,6 @@
 ---
 name: agent-orchestration-20260309-lzw
-version: "3.0"
+version: "3.1"
 description: >
   One-Person Company (OPC) 编排技能 — 复杂任务的多 Agent 协作指挥中枢。
   
@@ -12,7 +12,7 @@ description: >
   ⑤ 任务明确包含"并行执行""多路线""团队协作"等关键词
   ⑥ 用户提到"全链路""从头到尾""完整流程""做一个完整的X"
   
-  核心能力：Context Intake（背景摄入）、任务分解、多角色编排、状态持久化、断点续传。
+  核心能力：Context Intake（用户模型读取+背景摄入）、任务分解、多角色编排、状态持久化、断点续传、用户模型自更新。
   
   触发词（任意匹配）：
   OPC、一人公司、多agent、编排、全链路、复杂项目、帮我做完整的、

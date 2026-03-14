@@ -246,3 +246,50 @@
 3. 将 `references/` 和 `templates/` 下新文件复制到正式路径
 4. 将 `SKILL_v2_additions.md` 内容追加到 SKILL.md 末尾
 5. 将此 CHANGELOG 内容追加到 CHANGELOG.md
+
+---
+
+## v3.1 — 用户模型自学习（2026-03-14）
+
+### 核心变更：OPC 越用越懂你
+
+**问题**：v3.0 的 Phase 0 每次从零开始理解用户意图，不积累任何经验。
+
+**方案**：双源用户模型 + 项目结束自动写回。
+
+### 新增：Phase 0 用户模型读取
+
+OPC 触发后，在追问用户之前，先依次读取：
+
+| 优先级 | 文件 | 说明 |
+|--------|------|------|
+| ① | `workspace/opc-user-model.md` | OPC 专属模型，越用越精准 |
+| ② | `~/.openclaw/workspace/MEMORY.md` | OpenClaw 官方长期记忆 |
+| ③ | `~/.openclaw/workspace/USER.md` | 用户扩展文件（可能不存在）|
+| ④ | `~/.openclaw/workspace/memory/YYYY-MM-DD.md` | 今日日志（可选）|
+
+有预判 → 生成带预填的方案草稿，用户只需校正差异
+无预判（首次）→ 正常追问，记录为第一次使用
+
+### 新增：Phase 4 用户模型写回
+
+项目关闭前，CEO 自动将以下信息写入 `opc-user-model.md`：
+- 任务类型、角色配置、协作模式
+- 实际 token 消耗与耗时
+- Persona 效果观察
+- 踩坑与经验
+
+偏好区如有新发现，同步更新（覆盖旧条目）。
+
+### 新增文件
+
+| 文件 | 说明 |
+|------|------|
+| `playbook/templates/opc-user-model.md` | 用户模型文件模板 |
+| `workspace/opc-user-model.md` | 用户实例（含历史5个项目数据）|
+
+### 进化飞轮
+
+```
+项目越多 → 用户模型越丰富 → Phase 0 预判越准 → 用户越惊喜 → 做更多项目
+```

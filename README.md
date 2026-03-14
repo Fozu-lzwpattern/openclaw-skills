@@ -4,8 +4,9 @@
 
 基于 OpenClaw 原生 `sessions_spawn` / `sessions_send` 机制，OPC 把复杂任务拆解为多 Agent 并行协作，CEO（OpenClaw）负责规划、招募、监控和交付。
 
-## v3.0 新特性
+## v3.1 新特性
 
+- **用户模型自学习**：Phase 0 读取用户模型，Phase 4 写回，越用越懂你
 - **三层架构**：`brain/`（决策）+ `engine/`（执行）+ `playbook/`（知识）
 - **Phase 0 Context Intake**：强制入口，理解背景→给出方案→等确认后才执行
 - **工具发现 v2**：domain × capability 标签体系，精准推荐，OPC 自排除
