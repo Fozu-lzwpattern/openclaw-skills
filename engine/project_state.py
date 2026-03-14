@@ -267,6 +267,8 @@ def _get_trigger_engine(pid):
     import importlib.util
     spec = importlib.util.spec_from_file_location("trigger_engine", trigger_path)
     mod = importlib.util.module_from_spec(spec)
+    import sys as _sys
+    _sys.modules["trigger_engine"] = mod
     spec.loader.exec_module(mod)
     return mod.TriggerEngine(_project_dir(pid)), mod.FocusManager(_project_dir(pid))
 

@@ -54,6 +54,48 @@ def _tokenize(text: str) -> set[str]:
     return tokens
 
 
+# ──────────────────────────── Tag System v2 ────────────────────────────
+
+DOMAIN_TAGS = {
+    "marketing":     ["营销", "活动", "促销", "campaign", "gundam", "高达", "会场", "搭建", "发布", "页面"],
+    "research":      ["调研", "研究", "分析", "search", "搜索", "资讯", "信息", "新闻", "报告"],
+    "document":      ["文档", "报告", "docx", "word", "pdf", "xlsx", "excel", "pptx", "表格"],
+    "browser":       ["browser", "cdp", "网页", "自动化", "点击", "截图"],
+    "image":         ["图片", "图像", "生成", "绘图", "image", "ai绘图"],
+    "calendar":      ["日历", "日程", "会议", "预定", "时间", "calendar", "meeting"],
+    "storage":       ["存储", "上传", "s3", "文件", "download", "upload", "mss"],
+    "code":          ["代码", "编程", "开发", "github", "git", "pr", "issue", "仓库", "编码"],
+    "chat":          ["消息", "大象", "daxiang", "发送", "通知", "im", "聊天"],
+    "data":          ["数据", "股票", "金融", "a股", "k线", "行情", "mootdx"],
+    "notification":  ["提醒", "通知", "定时", "cron", "scheduled", "推送"],
+    "search":        ["搜索", "查找", "catclaw", "tavily", "web"],
+}
+
+CAPABILITY_TAGS = {
+    "create":    ["创建", "新建", "生成", "create", "build", "make", "init"],
+    "edit":      ["编辑", "修改", "更新", "edit", "update", "modify"],
+    "query":     ["查询", "查看", "获取", "query", "get", "fetch", "read"],
+    "analyze":   ["分析", "评估", "审查", "analyze", "evaluate", "review", "研究"],
+    "publish":   ["发布", "上线", "推送", "publish", "deploy", "release"],
+    "search":    ["搜索", "搜", "找", "search", "find", "look"],
+    "generate":  ["生成", "绘制", "创作", "generate", "draw", "write"],
+    "deploy":    ["部署", "安装", "配置", "deploy", "install", "setup"],
+}
+
+def _extract_tags_from_description(description: str) -> dict:
+    desc_lower = description.lower()
+    domains, capabilities = [], []
+    for tag, keywords in DOMAIN_TAGS.items():
+        if any(kw in desc_lower for kw in keywords):
+            domains.append(tag)
+    for tag, keywords in CAPABILITY_TAGS.items():
+        if any(kw in desc_lower for kw in keywords):
+            capabilities.append(tag)
+    return {"domain": domains, "capability": capabilities}
+
+def _extract_tags_from_task(task: str) -> dict:
+    return _extract_tags_from_description(task)
+
 # 可疑命令模式（安全初筛用）
 SUSPICIOUS_PATTERNS = [
     r"\bcurl\b.*\b(token|key|password|secret)\b",
@@ -231,57 +273,68 @@ class ToolDiscovery:
     def match_task_to_tools(
         self, task_description: str, available_tools: list[dict]
     ) -> list[dict]:
-        """将任务描述与可用工具匹配。
-        返回推荐列表 [{name, relevance, reason, path}]
-        使用关键词匹配 + 子串匹配（适配中文）
-        """
+        """v2 双路匹配：标签体系（优先）+ 关键词（兜底）+ OPC 自排除"""
         if not task_description or not available_tools:
             return []
 
-        # Tokenize: split English words + individual CJK bigrams + whole tokens
+        task_tags = _extract_tags_from_task(task_description)
+        task_domains = set(task_tags.get("domain", []))
+        task_capabilities = set(task_tags.get("capability", []))
         task_lower = task_description.lower()
         task_tokens = _tokenize(task_lower)
 
+        OPC_SELF = {"agent-orchestration-20260309-lzw", "agent-orchestration"}
         recommendations: list[dict] = []
 
         for tool in available_tools:
-            name = tool.get("name", "").lower()
-            desc = tool.get("description", "").lower()
-            tool_text = f"{name} {desc}"
-            tool_tokens = _tokenize(tool_text)
-
-            # Token overlap
-            common = task_tokens & tool_tokens
-            # Also check substring containment for CJK (bigrams miss some)
-            substr_hits: set[str] = set()
-            for t in task_tokens:
-                if len(t) >= 2 and t in tool_text:
-                    substr_hits.add(t)
-
-            all_hits = common | substr_hits
-            if not all_hits:
+            name = tool.get("name", "")
+            if name in OPC_SELF or "agent-orchestration" in name:
                 continue
 
-            # Score
-            relevance = len(all_hits)
-            # Bonus for name match
-            if any(t in name for t in task_tokens if len(t) >= 2):
-                relevance += 3
+            desc = tool.get("description", "").lower()
+            tool_text = f"{name.lower()} {desc}"
 
-            # Build reason
-            reason_words = sorted(all_hits)[:5]
-            reason = f"关键词匹配: {', '.join(reason_words)}"
+            # Path 1: 标签匹配
+            tool_tags = _extract_tags_from_description(desc + " " + name.lower())
+            tool_domains = set(tool_tags.get("domain", []))
+            tool_capabilities = set(tool_tags.get("capability", []))
+            domain_overlap = task_domains & tool_domains
+            cap_overlap = task_capabilities & tool_capabilities
+            tag_score = len(domain_overlap) * 3 + len(cap_overlap) * 2
+
+            # Path 2: 关键词匹配（兜底）
+            tool_tokens = _tokenize(tool_text)
+            kw_hits = (task_tokens & tool_tokens)
+            for t in task_tokens:
+                if len(t) >= 2 and t in tool_text:
+                    kw_hits.add(t)
+            kw_score = len(kw_hits)
+            if any(t in name.lower() for t in task_tokens if len(t) >= 2):
+                kw_score += 2
+
+            total_score = tag_score + kw_score
+            if total_score == 0:
+                continue
+
+            reason_parts = []
+            if domain_overlap:
+                reason_parts.append("domain:" + ",".join(sorted(domain_overlap)))
+            if cap_overlap:
+                reason_parts.append("cap:" + ",".join(sorted(cap_overlap)))
+            if kw_hits and not reason_parts:
+                reason_parts.append("kw:" + ",".join(sorted(kw_hits)[:4]))
+            reason = "; ".join(reason_parts) or "通用匹配"
 
             recommendations.append({
-                "name": tool.get("name", "?"),
-                "relevance": relevance,
+                "name": name,
+                "relevance": total_score,
                 "reason": reason,
                 "path": tool.get("path", ""),
                 "installed": tool.get("installed", False),
                 "source": tool.get("source", "unknown"),
+                "tags": {"domain": list(tool_domains), "capability": list(tool_capabilities)},
             })
 
-        # Sort by relevance descending
         recommendations.sort(key=lambda x: x["relevance"], reverse=True)
         return recommendations[:10]
 
