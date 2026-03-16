@@ -84,4 +84,4 @@ OPC 的核心创新之一：给每个 Agent 角色注入顶级人才的方法论
 
 ---
 
-MIT License · Built for [OpenClaw](https://github.com/openclaw/openclaw)
+Apache License 2.0 · Built for [OpenClaw](https://github.com/openclaw/openclaw)
