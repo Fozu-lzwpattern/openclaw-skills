@@ -1,6 +1,6 @@
 ---
 name: agent-orchestration-20260309-lzw
-version: "3.1"
+version: "3.2"
 description: >
   One-Person Company (OPC) 编排技能 — 复杂任务的多 Agent 协作指挥中枢。
   
@@ -19,7 +19,7 @@ description: >
   需要多个步骤、并行执行、团队协作、策划+搭建+发布、研究项目、内容流水线
 ---
 
-# OPC — One-Person Company 编排技能 v3.0
+# OPC — One-Person Company 编排技能 v3.2
 
 > 用户是老板，OpenClaw 是 CEO，Sub-agents 是专业员工。
 > 用户只说"我要做 X"，CEO 负责拆活儿、招人、盯进度、交结果。
@@ -183,7 +183,7 @@ agent 失败 → 立即归因
 ```
 agent-orchestration-20260309-lzw/
 ├── SKILL.md              ← 入口（你在这里）
-├── CHANGELOG.md          ← 完整版本历程（v1.0 → v3.1）
+├── CHANGELOG.md          ← 完整版本历程（v1.0 → v3.2）
 ├── brain/                ← CEO 决策层（怎么想）
 │   ├── core-flow.md      ← 四阶段流程 + Context Intake + 用户模型规范
 │   ├── task-decomposition.md
@@ -199,7 +199,9 @@ agent-orchestration-20260309-lzw/
 │   ├── diagnose_agent.py ← 自动归因
 │   └── README.md         ← 命令速查
 ├── playbook/             ← 知识与模板层（参考素材）
-│   ├── persona-priming.md
+│   ├── persona-priming.md     ← Persona 方法论 + 预置库索引
+│   ├── personas/
+│   │   └── lzw.md             ← 内置 LZW 顾问 Persona（v3.2）
 │   ├── philosophy.md
 │   ├── templates/
 │   │   └── opc-user-model.md  ← 用户模型模板（v3.1）
