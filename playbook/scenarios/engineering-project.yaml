@@ -1,0 +1,85 @@
+# 速启模板：工程开发项目 (Engineering Project)
+
+## 触发识别词
+开发功能 / 写代码 / 实现 / 重构 / 构建 / 工程 / MVP / 原型
+
+## 推荐角色组合
+
+```yaml
+roles:
+  - label: engineer_core       # 核心功能实现
+    template: engineer.md
+    persona: Martin Fowler     # 重构优先，接口清晰
+    owned_paths: packages/core/src/
+
+  - label: engineer_ui         # 可选：前端/UI 实现（独立 owned_paths）
+    template: engineer.md
+    persona: Rasmus Andersson
+    owned_paths: packages/webui/src/
+    depends_on: []             # 若接口已约定，可与 engineer_core 并行
+
+  - label: ux_designer         # 可选：复杂交互时加入
+    template: ux-designer.md
+    persona: Don Norman
+    owned_paths: docs/ux-spec/
+    depends_on: []             # 先于工程师或并行均可
+
+  - label: critic              # ⭐ 强制项：代码质量审查
+    template: critic.md
+    persona: Martin Fowler     # 审查代码可维护性
+    depends_on: [engineer_core]
+    pass_threshold: 3
+```
+
+## 典型 task-graph 声明
+
+```bash
+# 前后端并行
+python3 engine/project_state.py task-graph <pid> add engineer_core "" packages/core/src/
+python3 engine/project_state.py task-graph <pid> add engineer_ui "" packages/webui/src/
+python3 engine/project_state.py task-graph <pid> add critic "engineer_core,engineer_ui" reports/code-review.md
+```
+
+## Output Contract 框架
+
+```yaml
+outputs:
+  - label: core_code
+    path: workspace/{repo}/packages/core/
+    type: directory
+    test_cmd: "cd workspace/{repo} && npm test"
+    build_cmd: "cd workspace/{repo} && npm run build"
+    required: true
+
+  - label: ui_code
+    path: workspace/{repo}/packages/webui/
+    type: directory
+    test_cmd: "cd workspace/{repo} && npm run build"
+    required: false   # 纯后端项目改为 false
+
+  - label: critic_feedback
+    path: workspace/reports/{date}-code-review.md
+    type: markdown
+    required_sections: ["严重问题", "改进建议"]
+    required: true
+    pass_condition: "评分 ≥ 3"
+```
+
+## 验收流程
+
+```
+1. verify engineer_core → npm test 全绿 + npm run build 无 error
+2. verify engineer_ui → npm run build 无 error（如有）
+3. verify critic → 代码审查完整 + 评分 ≥ 3
+4. 全通过 → Phase 4 交付包
+```
+
+## 文件边界铁律
+
+⚠️ 工程项目并行时最容易出文件冲突：
+- engineer_core 的 owned_paths 和 engineer_ui 的 owned_paths 必须不重叠
+- 如需共享接口定义（如 types.ts），在 spawn 前由 CEO 先写好，两个 Agent 只读不写
+
+## 踩坑记录
+
+_（运行后自动由 Phase 5 复盘填入）_

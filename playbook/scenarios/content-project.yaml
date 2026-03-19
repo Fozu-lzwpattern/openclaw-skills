@@ -1,0 +1,82 @@
+# 速启模板：内容创作项目 (Content Project)
+
+## 触发识别词
+写文章 / 博客 / 发布 / 内容 / 文档 / 研究报告转文章 / 学城 / 小红书
+
+## 推荐角色组合
+
+```yaml
+roles:
+  - label: researcher           # 素材调研（可选：已有素材则跳过）
+    template: researcher.md
+    persona: LZW
+    owned_paths: research/{topic}/
+
+  - label: writer               # 内容写作（核心角色）
+    template: writer.md
+    persona: LZW                # 首选：体系化收敛，有范式感
+    depends_on: [researcher]    # 若无研究员，改为 depends_on: []
+    owned_paths: articles/
+
+  - label: critic               # ⭐ 强制项：内容质量审查
+    template: critic.md
+    persona: Paul Graham        # 审查逻辑和真实性
+    depends_on: [writer]
+    pass_threshold: 3
+```
+
+## 典型 task-graph 声明
+
+```bash
+# 有预研：研究员 → 写作者 → critic
+python3 engine/project_state.py task-graph <pid> add researcher "" research/{topic}/notes.md
+python3 engine/project_state.py task-graph <pid> add writer "researcher" articles/{date}-{slug}.md
+python3 engine/project_state.py task-graph <pid> add critic "writer" reports/{date}-content-review.md
+
+# 无预研（直接写作）：
+python3 engine/project_state.py task-graph <pid> add writer "" articles/{date}-{slug}.md
+python3 engine/project_state.py task-graph <pid> add critic "writer" reports/{date}-content-review.md
+```
+
+## Output Contract 框架
+
+```yaml
+outputs:
+  - label: research_notes
+    path: workspace/research/{topic}/notes.md
+    type: markdown
+    min_lines: 30
+    required: false   # 无预研时为 false
+
+  - label: article
+    path: workspace/articles/{date}-{slug}.md
+    type: markdown
+    min_words: 800    # 短文 800 字 / 深度文章 2000 字
+    required_sections: []   # 由 USER_VOICE 决定结构
+    required: true
+
+  - label: critic_feedback
+    path: workspace/reports/{date}-content-review.md
+    type: markdown
+    required_sections: ["严重问题", "改进建议", "可取之处"]
+    required: true
+    pass_condition: "评分 ≥ 3"
+```
+
+## 验收流程
+
+```
+1. verify writer → 文章字数达标 + 有标题 + 开篇非套话
+2. verify critic → 反馈结构完整 + 评分 ≥ 3
+3. 全通过 → Phase 4 交付包
+   CEO 建议中注明：可发布渠道（博客/学城/小红书）
+```
+
+## USER_VOICE 优先级
+
+内容项目中，USER_VOICE 是最高优先级——用户说"要有点傲娇感"，就比 LZW Persona 的任何默认风格都高。
+writer 角色的任务描述里必须完整引用用户的原话风格要求。
+
+## 踩坑记录
+
+_（运行后自动由 Phase 5 复盘填入）_

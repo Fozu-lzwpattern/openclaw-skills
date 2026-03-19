@@ -454,3 +454,28 @@ OPC 触发后，在追问用户之前，先依次读取：
 - **依赖图前置**：Phase 1 规划时就声明，不等到 spawn 时再想
 - **并行有条件**：三个条件全满足才并行，否则默认串行
 - **四问强制过**：spawn 前必须能回答四问，回答不出来就继续拆
+
+
+---
+
+## v5.2 (2026-03-19) — 项目类型速启模板 + critic 铁律
+
+> 大仙提出：无论什么项目类型，都必须有评价和反馈角色。
+
+### Design Decision
+
+**critic 是所有项目的强制项**：
+- 质量是 OPC 最后一道关，不能只靠 CEO 机器验收（verify）
+- verify 检查文件存在性和命令通过，critic 审查内容质量
+- 评分 < 3 的产出不进交付包，打回重做
+
+### Added
+
+- **playbook/scenarios/research-project.yaml** — 深度研究项目速启模板
+- **playbook/scenarios/engineering-project.yaml** — 工程开发项目速启模板
+- **playbook/scenarios/content-project.yaml** — 内容创作项目速启模板
+- **playbook/scenarios/_README.md** — 模板通用规则（critic 铁律声明）
+
+### Changed
+
+- SKILL.md v5.2：新增速启模板速查表 + critic 铁律说明

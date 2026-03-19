@@ -1,0 +1,86 @@
+# 速启模板：深度研究项目 (Research Project)
+
+## 触发识别词
+深度研究 / 调研 / 竞品分析 / 领域分析 / 行业报告 / 文献综述 / 可行性分析
+
+## 推荐角色组合
+
+```yaml
+roles:
+  - label: researcher_a         # 可扩展为 researcher_b / researcher_c
+    template: researcher.md
+    persona: Nate Silver         # 数据驱动，量化不确定性
+    owned_paths: reports/{topic}-a/
+
+  - label: researcher_b         # 可选：多方向并行研究
+    template: researcher.md
+    persona: Mary Meeker
+    owned_paths: reports/{topic}-b/
+
+  - label: integrator           # 汇总整合，必须串行在研究员之后
+    template: integrator.md
+    persona: LZW
+    depends_on: [researcher_a, researcher_b]
+    owned_paths: reports/{topic}-final/
+
+  - label: critic               # ⭐ 强制项：质量审查
+    template: critic.md
+    persona: Nate Silver        # 审查研究严谨性
+    depends_on: [integrator]
+    pass_threshold: 3           # 评分 ≥ 3 才能进入交付包
+```
+
+## 典型 task-graph 声明
+
+```bash
+python3 engine/project_state.py task-graph <pid> add researcher_a "" reports/{topic}-a.md
+python3 engine/project_state.py task-graph <pid> add researcher_b "" reports/{topic}-b.md
+python3 engine/project_state.py task-graph <pid> add integrator "researcher_a,researcher_b" reports/{topic}-final.md
+python3 engine/project_state.py task-graph <pid> add critic "integrator" reports/{topic}-critic-feedback.md
+```
+
+## Output Contract 框架
+
+```yaml
+outputs:
+  - label: research_a
+    path: workspace/reports/{date}-{topic}-a.md
+    type: markdown
+    min_lines: 80
+    required_sections: ["核心发现", "参考来源"]
+    required: true
+
+  - label: research_b
+    path: workspace/reports/{date}-{topic}-b.md
+    type: markdown
+    min_lines: 80
+    required_sections: ["核心发现", "参考来源"]
+    required: false   # 单研究员时改为 false
+
+  - label: final_report
+    path: workspace/reports/{date}-{topic}-final.md
+    type: markdown
+    min_lines: 100
+    required_sections: ["执行摘要", "综合结论", "行动建议"]
+    required: true
+
+  - label: critic_feedback
+    path: workspace/reports/{date}-{topic}-critic.md
+    type: markdown
+    required_sections: ["严重问题", "改进建议", "可取之处"]
+    required: true
+    pass_condition: "评分 ≥ 3"
+```
+
+## 验收流程
+
+```
+1. verify researcher_a / researcher_b → 报告行数 + 章节存在
+2. verify integrator → 最终报告完整性
+3. verify critic → 反馈结构完整 + 评分 ≥ 3
+4. 全通过 → Phase 4 交付包
+```
+
+## 踩坑记录
+
+_（运行后自动由 Phase 5 复盘填入）_
